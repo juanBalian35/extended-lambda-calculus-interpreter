@@ -28,15 +28,15 @@ subst (Rec e) s = Rec (subst e s)
 reduction :: Exp -> Exp
 reduction (Apli (Lambda ss e) es)
   | length(ss) == length(es) = subst e (zip ss es)
-  | otherwise = error("Cantidad de parametros debe ser igual a cantidad de argumentos.")
+  | otherwise = error("Number of arguments should be the same as the number of parameters.")
 reduction (Apli (Apli (Cons s) esi) eso) = Apli (Cons s) (esi ++ eso)
 reduction (Apli e es) = Apli (reduction e) es
 reduction (Case (Cons s) rs)
   | Just y <- lookup s rs = y
-  | otherwise =  error("Constructor " ++ s ++ " no se encuentra en ramas")
+  | otherwise =  error("Constructor " ++ s ++ " not found in any of the branches")
 reduction (Case (Apli (Cons s) es) rs)
   | Just y <- lookup s rs = Apli y es
-  | otherwise =  error("Constructor " ++ s ++ " no se encuentra en ramas")
+  | otherwise =  error("Constructor " ++ s ++ " not found in any of the branches")
 reduction (Case e rs) = Case (reduction e) rs;
 reduction (Rec e) =  Apli e [Rec e]
 
@@ -53,8 +53,8 @@ eval e
   where weakeval = weval e
 
 nnot = Lambda ["b"] (Case (Var "b") [("True", Cons "False"), ("False", Cons "True")])
-par = Rec(Lambda ["par"] (Lambda ["n"] (Case (Var "n") [("0", Cons "True"),("S", Lambda ["x"] (Apli (nnot) [(Apli (Var "par") [Var "x"])]))])))
+evenn = Rec(Lambda ["even"] (Lambda ["n"] (Case (Var "n") [("0", Cons "True"),("S", Lambda ["x"] (Apli (nnot) [(Apli (Var "even") [Var "x"])]))])))
 
--- eval(Apli par [Cons "0"])                                           -> Cons "True"
--- eval(Apli par [Apli (Cons "S") [Cons "0"]])                         -> Cons "False"
--- eval(Apli par [Apli (Cons "S") [Apli (Cons "S") [Cons "0"]]])       -> Cons "True"
+-- eval(Apli evenn [Cons "0"])                                           -> Cons "True"
+-- eval(Apli evenn [Apli (Cons "S") [Cons "0"]])                         -> Cons "False"
+-- eval(Apli evenn [Apli (Cons "S") [Apli (Cons "S") [Cons "0"]]])       -> Cons "True"
